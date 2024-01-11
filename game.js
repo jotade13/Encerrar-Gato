@@ -26,6 +26,11 @@ class Juego{
     {
         return this._empezado = band;
     }
+
+    function crearJuego()
+    {
+
+    }
 }
 class Casilla{
     constructor(fila,col){
