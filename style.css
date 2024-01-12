@@ -10,12 +10,37 @@ body{
 }
 #juego{
     background-color: rgb(176, 103, 218);
-    width: 800px;
-    height: 450px;
+    width: 700px;
+    height: 470px;
     margin-left: auto;
     margin-right: auto;
     border: 5px;
     border-radius: 2%;
     border-style: solid;
     border-color: black;
+    padding-top: 15px;
 }
+.fila{
+    position: relative;
+    display: flex;
+    height: 45px;
+    width: 500px;
+    margin-left: 115px;
+    margin-right: 100px;
+}
+#fila-par{
+    right: 20px;
+}
+.casillas{
+    position: relative;
+    display: inline-block;
+    background-color: #0080c5;
+    width: 40px;
+    height: 40px;
+    margin: 1px;
+    border-style: solid;
+    border-color: black;
+    border-radius: 50%; 
+}
+
+

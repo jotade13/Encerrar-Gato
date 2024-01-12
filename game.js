@@ -1,14 +1,30 @@
 class Juego{
     constructor()
     {
+        const juego = document.getElementById("juego");
         let casilla = [];
         for(let i=0;i<10;i++)
         {
+            var divfila = document.createElement("div");
+            divfila.className="fila";
+            
+            if(i%2==0)
+            {
+                divfila.id = "fila-par"
+            }else{
+                divfila.id = "filaimpar"
+            }
             casilla[i] = [];
+
             for(let j=0;j<10;j++)
             {
                 casilla[i][j] = new Casilla(i,j);
+                var div = document.createElement("div")
+                div.className = "casillas";
+                div.id = "cas-"+i+"-"+j;
+                divfila.appendChild(div);
             }
+            juego.appendChild(divfila)
         }
         let gato = new Gato();
         _terminado=false;
@@ -27,10 +43,22 @@ class Juego{
         return this._empezado = band;
     }
 
-    function crearJuego()
+   /* crearJuego()
     {
-
+        
+        
+        for(let i=0;i<10;i++)
+        {
+            for(let j=0;j<10;j++)
+            {
+                var div = document.createElement("div")
+                div.className = "hexagono";
+                div.id = "hex-"+i+"-"+j;
+                juego.appendChild(div);
+            }
+        }
     }
+    */
 }
 class Casilla{
     constructor(fila,col){
