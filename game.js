@@ -2,7 +2,7 @@ class Juego{
     constructor()
     {
         const juego = document.getElementById("juego");
-        let casilla = [];
+            this._casilla = [];
         for(let i=0;i<10;i++)
         {
             var divfila = document.createElement("div");
@@ -14,21 +14,22 @@ class Juego{
             }else{
                 divfila.id = "filaimpar"
             }
-            casilla[i] = [];
+            this._casilla[i] = [];
 
             for(let j=0;j<10;j++)
             {
-                casilla[i][j] = new Casilla(i,j);
+               this._casilla[i][j] = new Casilla(i,j);
                 var div = document.createElement("div")
                 div.className = "casillas";
                 div.id = "cas-"+i+"-"+j;
+                div.addEventListener("click",this.bloquear.bind(this,div.id,i,j))
                 divfila.appendChild(div);
             }
             juego.appendChild(divfila)
         }
-        let gato = new Gato();
-        _terminado=false;
-        _empezado=false;
+        this._gato = new Gato();
+        this._terminado = false;
+        this._empezado = false;
     }
     get terminado()
     {
@@ -40,25 +41,16 @@ class Juego{
     }
     set empezado(band)
     {
-        return this._empezado = band;
+        this._empezado = band;
     }
-
-   /* crearJuego()
+    bloquear(id,i,j)
     {
-        
-        
-        for(let i=0;i<10;i++)
+        if(!this._casilla[i][j].gato&&!this._casilla[i][j].estado)
         {
-            for(let j=0;j<10;j++)
-            {
-                var div = document.createElement("div")
-                div.className = "hexagono";
-                div.id = "hex-"+i+"-"+j;
-                juego.appendChild(div);
-            }
+            this._casilla[i][j].bloquear;
+            document.getElementById(id).style.backgroundColor = "#014366"
         }
     }
-    */
 }
 class Casilla{
     constructor(fila,col){
@@ -82,6 +74,11 @@ class Casilla{
     get gato()
     {
         return this._gato
+    }
+
+    bloquear()
+    {
+        this.estado = true;
     }
 
     set estado(band)

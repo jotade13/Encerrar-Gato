@@ -39,8 +39,10 @@ body{
     height: 40px;
     margin: 1px;
     border-style: solid;
-    border-color: black;
-    border-radius: 50%; 
+    border-radius: 50%;
+    cursor: pointer;
 }
-
+.casillas:hover{
+    background-color: #014366; 
+}
 
