@@ -18,7 +18,8 @@ class Juego{
 
             for(let j=0;j<10;j++)
             {
-               this._casilla[i][j] = new Casilla(i,j);
+                this._casilla[i][j] = new Casilla(i,j);
+                if(divfila.id)
                 var div = document.createElement("div")
                 div.className = "casillas";
                 div.id = "cas-"+i+"-"+j;
@@ -35,6 +36,10 @@ class Juego{
     {
         return this._terminado;
     }
+    set terminado(band)
+    {
+        this._terminado = band
+    }
     get empezado()
     {
         return this._empezado;
@@ -47,8 +52,51 @@ class Juego{
     {
         if(!this._casilla[i][j].gato&&!this._casilla[i][j].estado)
         {
-            this._casilla[i][j].bloquear;
+            this._casilla[i][j].bloquear();
             document.getElementById(id).style.backgroundColor = "#014366"
+        }
+        this._terminado = this.fin()
+    }
+    fin()
+    {
+        let auxPar = 0;
+        let band1 = true;
+        let band2 = true;
+        if(this._casilla[this._gato.fila][this._gato.col].par)
+        {
+             auxPar=1;
+        }
+        for(let i=this._gato.fila-1;i<=this._gato.fila+1;i+=2)
+        {
+            for(let j=this._gato.col-auxPar;j<=this._gato.col-auxPar+1;j++)
+            {
+                if(i>=0&&i<=9&&j>=0&&j<=9)
+                {
+                    if(!this._casilla[i][j].estado)
+                    {
+                        band1=false; break;
+                    } 
+                }
+            }
+        }
+        for(let j=this._gato.col-1;j<=this._gato.col+1;j+=2)
+        {
+            if(j>=0&&j<=9)
+            {
+                if(!this._casilla[this._gato.fila][j].estado)
+                {
+                    
+                    band2= false; break;
+                }
+            }
+        }
+        if(band1&&band2)
+        {
+            alert("juego ganado")
+            return true;
+        }else
+        {
+            return false;   
         }
     }
 }
@@ -56,8 +104,22 @@ class Casilla{
     constructor(fila,col){
         this._fila= fila;
         this._col= col;
-        this._estado = false;
-        this._gato = false;
+        if(fila%2==0)
+        {
+            this._par = true;
+        }else
+        {
+            this._par = false;
+        }
+        if(fila==4&&col==5)
+        {
+            this._estado = true;
+            this._gato = true;
+        }else
+        {
+            this._estado = false;
+            this._gato = false;
+        } 
     }
     get fila()
     {
@@ -75,6 +137,10 @@ class Casilla{
     {
         return this._gato
     }
+    get par()
+    {
+        return this._par
+    }
 
     bloquear()
     {
@@ -89,12 +155,11 @@ class Casilla{
     {
         this._gato = band;
     }
-    
 }
 class Gato{
     constructor()
     {
-        this._fila = 5;
+        this._fila = 4;
         this._col = 5;
     }
     get fila()
@@ -112,6 +177,10 @@ class Gato{
     set col(col)
     {
         this._col = col;
+    }
+    moverGato()
+    {
+
     }
 }
     let juego = new Juego();
