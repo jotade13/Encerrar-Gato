@@ -34,7 +34,7 @@ class Juego{
         }
         this._gato = new Gato();
         this._terminado = false;
-        this._empezado = false;
+        this._ganar = false;
         this.recorrerLasCasillas(1);
     }
     get terminado()
@@ -52,6 +52,14 @@ class Juego{
     set empezado(band)
     {
         this._empezado = band;
+    }
+    get ganar()
+    {
+        return this._ganar;
+    }
+    set ganar(band)
+    {
+        this._ganar = band;
     }
     recorrerLasCasillas(accion) //accion = 1 recorre las casillas y agrega los vertices de los nodos alrededor de el
     {
@@ -72,11 +80,16 @@ class Juego{
         {
             this._casilla[fila][col].bloquear();
             this._grafo.eliminarNodoyAristas(fila+""+col);
-            document.getElementById(id).style.backgroundColor = "#014366"
+            document.getElementById(id).style.backgroundColor = "#014366";
+            this._terminado = this.recorrer(1,this._gato.fila,this._gato.col);
+            if(!this._terminado)
+            {
+                this.moverGato();
+            }   
         }
-        this._terminado = this.recorrer(1,this._gato.fila,this._gato.col);
+        this.fin();
     }
-    recorrer(accion,fila,col) //accion = 1 comprueba si perdio. accion = 2 comprueba sus alrededores y agrega los vertices
+    recorrer(accion,fila,col) //accion = 1 comprueba si ganó. accion = 2 comprueba sus alrededores y agrega los vertices
     {
         let auxPar = 0;
         let band1 = true;
@@ -125,11 +138,167 @@ class Juego{
         {
             if(band1&&band2)
             {
-                alert("juego ganado")
+                this.ganar = true;
                 return true;
             }else
             {
                 return false;   
+            }
+        }
+    }
+    moverGato() //adaptamos el algoritmo Dijkstra para mover al gato
+    {
+        const nodosNoVisitados = Object.assign({}, this._grafo.nodos);
+        const distancias = {};
+        const camino = {};
+        const gato = this._gato._fila+""+this._gato._col;
+        let nodoActual = gato;
+        let band = false;
+        let finEncontrado;
+        let auxNodo;
+        for (let nodo in nodosNoVisitados) 
+        {
+            if(nodo>-1&&nodo<10)
+            {
+                nodo = "0"+nodo;
+            }
+            distancias[nodo] = nodo === gato ? 0 : Infinity;
+        }
+        
+        while(!band||this.terminado)
+        {
+            for (let vecino of this._grafo.aristas[nodoActual]) 
+            {
+                if(vecino>-1&&vecino<10)
+                {
+                    vecino = "0"+vecino;
+                }
+                const distancia = distancias[nodoActual] + 1;
+                if (distancia < distancias[vecino]) 
+                {
+                  distancias[vecino] = distancia;
+                  camino[vecino] = nodoActual;
+                }
+            }
+            delete nodosNoVisitados[nodoActual];
+            nodoActual = obtenerNodoMinimaDistancia(nodosNoVisitados, distancias);
+            if(nodoActual!=null)
+            {  
+                for (let nodo in this._grafo.nodos) 
+                {
+                    if(nodo>-1&&nodo<10)
+                    {
+                        nodo = "0"+nodo;
+                    }
+                    auxNodo = parseInt(nodo)
+                    if((auxNodo%10==0||auxNodo%10==tam_col-1||(auxNodo/10>=0&&auxNodo/10<1)||(auxNodo/10>=9&&auxNodo/10<10))&&nodoActual===nodo)
+                    {
+                        band=true;
+                        finEncontrado=nodo;
+                        break;
+                    }
+                }
+            }
+        }
+        if(distancias[nodoActual]===Infinity)
+        {
+            escogerMovimiento(camino,gato,finEncontrado,false)
+        }else
+        {
+            escogerMovimiento(camino,gato,finEncontrado,true)
+        }
+        this.fin();
+        
+        function obtenerNodoMinimaDistancia(nodos, distancias) 
+        {
+            let nodoMin = null;
+            for (let nodo in nodos) 
+            {
+                if(nodo>-1&&nodo<10)
+                {
+                    nodo = "0"+nodo;
+                }
+                if (nodoMin === null || distancias[nodo] < distancias[nodoMin])
+                {
+                    nodoMin = nodo;
+                }
+            }
+            if(nodoMin==null)
+            {
+                return null;
+            }
+            else
+            {
+                return nodoMin;
+            }
+        }
+        function escogerMovimiento(camino, inicio, fin, band) 
+        {
+            if(Object.keys(camino).length)
+            {
+                const resultado = [];
+                let nodo = fin;
+                if(nodo>-1&&nodo<10)
+                {
+                    nodo = "0"+nodo;
+                }
+               
+
+                if(band)
+                {
+                    while (nodo !== inicio)
+                    {
+                        resultado.unshift(nodo);
+                        nodo = camino[nodo];
+                    }
+                    resultado.unshift(inicio);
+
+                    juego._casilla[juego._gato._fila][juego._gato.col].gato = false;
+                    juego._casilla[juego._gato._fila][juego._gato.col].estado = false;
+                    juego._gato._fila = resultado[1][0];
+                    juego._gato.col = resultado[1][1];
+                    juego._casilla[resultado[1][0]][resultado[1][1]].gato = true;
+                    juego._casilla[resultado[1][0]][resultado[1][1]].estado = true;
+
+                    console.log(juego._gato._fila+""+juego._gato.col)
+                }else
+                {
+                    let nro = Math.floor(Math.random()*juego._grafo.aristas[inicio].length);
+                    let nroMov = juego._grafo.aristas[inicio][nro]
+                    let nroFila = Math.floor(nroMov/10)
+                    let nroCol = nroMov%10
+                    console.log(nroFila);
+                    console.log(nroCol);
+                    juego._casilla[juego._gato._fila][juego._gato.col].gato = false;
+                    juego._casilla[juego._gato._fila][juego._gato.col].estado = false;
+                    juego._gato._fila = nroFila;
+                    juego._gato.col = nroCol;
+                    juego._casilla[nroFila][nroCol].gato = true;
+                    juego._casilla[nroFila][nroCol].estado = true;
+
+                    console.log(juego._gato._fila+""+juego._gato.col)
+                }      
+            }else
+            {
+                juego.terminado=true;
+            }
+        }
+    }
+    fin()
+    {
+        if(this._gato.fila==0||this._gato.fila==tam_fila-1||this._gato.col==0||this._gato.col==tam_fila-1)
+        {
+            this._terminado = true;
+            this._ganar = false;
+        }
+        if(this._terminado)
+        {
+            if(this.ganar)
+            {
+                alert("ganaste");
+            }else
+            {
+                alert("perdiste");
             }
         }
     }
@@ -148,7 +317,7 @@ class Casilla{
         if(fila==4&&col==5)
         {
             this._estado = true;
-            this._gato = true;
+            this._gato = true; 
         }else
         {
             this._estado = false;
@@ -212,10 +381,6 @@ class Gato{
     {
         this._col = col;
     }
-    moverGato()
-    {
-
-    }
 }
 class Grafo // Definir una clase Grafo que tiene un arreglo de nodos y un objeto de aristas para el mapa
 {
@@ -251,7 +416,6 @@ class Grafo // Definir una clase Grafo que tiene un arreglo de nodos y un objeto
                 indiceSelec = "0"+indiceSelec;
             }*/
             this.aristas[indiceFin].splice(indiceSelec,1);
-            console.log(this.aristas[indiceFin])
         });
 
         this.aristas[nodo]= [];
