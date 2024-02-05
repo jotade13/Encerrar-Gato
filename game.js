@@ -7,8 +7,6 @@ class Juego{
         const juego = document.getElementById("juego");
         this._casilla = [];
         this._grafo = new Grafo();
-        let filasAleatorias = [];
-        let colAleatorias = [];
         for(let i=0;i<tam_fila;i++)
         {
             var divfila = document.createElement("div");
