@@ -1,11 +1,14 @@
 const tam_fila = 10;
 const tam_col = 10;
+const casillasAleatorias= 6;
 class Juego{
     constructor()
     {
         const juego = document.getElementById("juego");
         this._casilla = [];
         this._grafo = new Grafo();
+        let filasAleatorias = [];
+        let colAleatorias = [];
         for(let i=0;i<tam_fila;i++)
         {
             var divfila = document.createElement("div");
@@ -21,13 +24,11 @@ class Juego{
             for(let j=0;j<tam_col;j++)
             {
                 this._casilla[i][j] = new Casilla(i,j);
-                this._grafo.agregarNodo(i+""+j)
-                if(divfila.id)
+                this._grafo.agregarNodo(i+"-"+j)
                 var div = document.createElement("div");
-                div.textContent= i+""+j;
                 div.className = "casillas";
                 div.id = "cas-"+i+"-"+j;
-                div.addEventListener("click",this.bloquear.bind(this,div.id,i,j))
+                div.addEventListener("click",this.bloquear.bind(this,div.id,i,j,true))
                 divfila.appendChild(div);
             }
             juego.appendChild(divfila)
@@ -36,6 +37,8 @@ class Juego{
         this._terminado = false;
         this._ganar = false;
         this.recorrerLasCasillas(1);
+        this.imagenGato(true);
+        this.dibujarCasillasAleatorias();
     }
     get terminado()
     {
@@ -61,6 +64,20 @@ class Juego{
     {
         this._ganar = band;
     }
+    dibujarCasillasAleatorias()
+    {
+        let filaAleatoria;
+        let colAleatoria;
+        for(let i=0;i<casillasAleatorias;i++)
+        {
+            filaAleatoria = Math.floor(Math.random()*tam_fila);
+            colAleatoria = Math.floor(Math.random()*tam_col);
+            if(!this._casilla[filaAleatoria][colAleatoria].estado)
+            {
+                this.bloquear("cas-"+filaAleatoria+"-"+colAleatoria,filaAleatoria,colAleatoria,false)
+            }
+        }
+    }
     recorrerLasCasillas(accion) //accion = 1 recorre las casillas y agrega los vertices de los nodos alrededor de el
     {
         for(let i=0;i<tam_fila;i++)
@@ -74,20 +91,23 @@ class Juego{
             }
         }
     }
-    bloquear(id,fila,col)
+    bloquear(id,fila,col,click) //click true, proviene de click
     {
         if(!this._casilla[fila][col].gato&&!this._casilla[fila][col].estado)
         {
             this._casilla[fila][col].bloquear();
-            this._grafo.eliminarNodoyAristas(fila+""+col);
+            this._grafo.eliminarNodoyAristas(fila+"-"+col);
             document.getElementById(id).style.backgroundColor = "#014366";
             this._terminado = this.recorrer(1,this._gato.fila,this._gato.col);
-            if(!this._terminado)
+            if(click)
             {
+                this.imagenGato(false);
                 this.moverGato();
-            }   
+                this.imagenGato(true);
+            }
+            this.fin();
         }
-        this.fin();
+        
     }
     recorrer(accion,fila,col) //accion = 1 comprueba si ganó. accion = 2 comprueba sus alrededores y agrega los vertices
     {
@@ -112,7 +132,7 @@ class Juego{
                         }
                     }else
                     {
-                        this._grafo.agregarArista(fila+""+col,i+""+j);
+                        this._grafo.agregarArista(fila+"-"+col,i+"-"+j);
                     } 
                 }
             }
@@ -130,7 +150,7 @@ class Juego{
                 }
                 else
                 {
-                    this._grafo.agregarArista(fila+""+col,fila+""+j)
+                    this._grafo.agregarArista(fila+"-"+col,fila+"-"+j)
                 }    
             }
         }
@@ -148,31 +168,23 @@ class Juego{
     }
     moverGato() //adaptamos el algoritmo Dijkstra para mover al gato
     {
-        const nodosNoVisitados = Object.assign({}, this._grafo.nodos);
+        let nodosNoVisitados = Object.assign({}, this._grafo.nodos);
         const distancias = {};
         const camino = {};
-        const gato = this._gato._fila+""+this._gato._col;
+        const gato = this._gato._fila+"-"+this._gato._col;
         let nodoActual = gato;
         let band = false;
         let finEncontrado;
-        let auxNodo;
+
         for (let nodo in nodosNoVisitados) 
         {
-            if(nodo>-1&&nodo<10)
-            {
-                nodo = "0"+nodo;
-            }
             distancias[nodo] = nodo === gato ? 0 : Infinity;
         }
         
         while(!band||this.terminado)
         {
-            for (let vecino of this._grafo.aristas[nodoActual]) 
+            for (let vecino of this._grafo.nodos[nodoActual]) 
             {
-                if(vecino>-1&&vecino<10)
-                {
-                    vecino = "0"+vecino;
-                }
                 const distancia = distancias[nodoActual] + 1;
                 if (distancia < distancias[vecino]) 
                 {
@@ -186,13 +198,10 @@ class Juego{
             {  
                 for (let nodo in this._grafo.nodos) 
                 {
-                    if(nodo>-1&&nodo<10)
+                    if((nodo[0]==0||nodo[0]==tam_fila-1||nodo[2]==0||nodo[2]==tam_col-1)&&nodoActual==nodo)
                     {
-                        nodo = "0"+nodo;
-                    }
-                    auxNodo = parseInt(nodo)
-                    if((auxNodo%10==0||auxNodo%10==tam_col-1||(auxNodo/10>=0&&auxNodo/10<1)||(auxNodo/10>=9&&auxNodo/10<10))&&nodoActual===nodo)
-                    {
+                        console.log(nodoActual)
+                        console.log(nodo)
                         band=true;
                         finEncontrado=nodo;
                         break;
@@ -206,18 +215,12 @@ class Juego{
         }else
         {
             escogerMovimiento(camino,gato,finEncontrado,true)
-        }
-        this.fin();
-        
+        }        
         function obtenerNodoMinimaDistancia(nodos, distancias) 
         {
             let nodoMin = null;
             for (let nodo in nodos) 
             {
-                if(nodo>-1&&nodo<10)
-                {
-                    nodo = "0"+nodo;
-                }
                 if (nodoMin === null || distancias[nodo] < distancias[nodoMin])
                 {
                     nodoMin = nodo;
@@ -234,16 +237,12 @@ class Juego{
         }
         function escogerMovimiento(camino, inicio, fin, band) 
         {
-            if(Object.keys(camino).length)
+            console.log(Object.keys(camino).length);
+            if(Object.keys(camino).length>0)
             {
                 const resultado = [];
                 let nodo = fin;
-                if(nodo>-1&&nodo<10)
-                {
-                    nodo = "0"+nodo;
-                }
                
-
                 if(band)
                 {
                     while (nodo !== inicio)
@@ -256,37 +255,33 @@ class Juego{
                     juego._casilla[juego._gato._fila][juego._gato.col].gato = false;
                     juego._casilla[juego._gato._fila][juego._gato.col].estado = false;
                     juego._gato._fila = resultado[1][0];
-                    juego._gato.col = resultado[1][1];
-                    juego._casilla[resultado[1][0]][resultado[1][1]].gato = true;
-                    juego._casilla[resultado[1][0]][resultado[1][1]].estado = true;
+                    juego._gato.col = resultado[1][2];
+                    juego._casilla[resultado[1][0]][resultado[1][2]].gato = true;
+                    juego._casilla[resultado[1][0]][resultado[1][2]].estado = true;
 
-                    console.log(juego._gato._fila+""+juego._gato.col)
                 }else
                 {
-                    let nro = Math.floor(Math.random()*juego._grafo.aristas[inicio].length);
-                    let nroMov = juego._grafo.aristas[inicio][nro]
-                    let nroFila = Math.floor(nroMov/10)
-                    let nroCol = nroMov%10
-                    console.log(nroFila);
-                    console.log(nroCol);
+                    let nro = Math.floor(Math.random()*juego._grafo.nodos[inicio].length);
+                    let nroMov = juego._grafo.nodos[inicio][nro]
+                    let nroFila = nroMov[0]
+                    let nroCol = nroMov[2]
                     juego._casilla[juego._gato._fila][juego._gato.col].gato = false;
                     juego._casilla[juego._gato._fila][juego._gato.col].estado = false;
                     juego._gato._fila = nroFila;
                     juego._gato.col = nroCol;
                     juego._casilla[nroFila][nroCol].gato = true;
                     juego._casilla[nroFila][nroCol].estado = true;
-
-                    console.log(juego._gato._fila+""+juego._gato.col)
                 }      
             }else
             {
                 juego.terminado=true;
+                juego.ganar=true;
             }
         }
     }
     fin()
     {
-        if(this._gato.fila==0||this._gato.fila==tam_fila-1||this._gato.col==0||this._gato.col==tam_fila-1)
+        if(this._gato.fila==0||this._gato.fila==tam_fila-1||this._gato.col==0||this._gato.col==tam_col-1)
         {
             this._terminado = true;
             this._ganar = false;
@@ -295,11 +290,26 @@ class Juego{
         {
             if(this.ganar)
             {
-                alert("ganaste");
+                console.log("ganaste");
             }else
             {
-                alert("perdiste");
+                console.log("perdiste");
             }
+        }
+    }
+    imagenGato(band) //band true agregar gato y band false quitar gato
+    {
+        var gato = document.getElementById("cas-"+this._gato.fila+"-"+this._gato.col);
+        if(band)
+        {
+            var imagen = document.createElement("img");
+            imagen.id = "gato-img"
+            imagen.src = "gato.png";
+            gato.appendChild(imagen);        
+        }else
+        {
+            var imagen = document.getElementById("gato-img");
+            gato.removeChild(imagen);        
         }
     }
 }
@@ -386,40 +396,32 @@ class Grafo // Definir una clase Grafo que tiene un arreglo de nodos y un objeto
 {
     constructor()
     {
-        this.nodos = [];
-        this.aristas = [];
+        this.nodos = {};
     }
     // Añadir un nodo al grafo
     agregarNodo(nodo)
     {
-        this.nodos.push(nodo);
-        this.aristas[nodo] = [];
+        this.nodos[nodo]=[];
     }
 
   // Añadir una arista entre dos nodos
     agregarArista(nodo1, nodo2)
     {
-        this.aristas[nodo1].push(nodo2);
+        this.nodos[nodo1].push(nodo2);
     }
     eliminarNodoyAristas(nodo)
     {
-        this.aristas[nodo].forEach(nodoFin => 
+        this.nodos[nodo].forEach(nodoFin => 
         {
-            let indiceFin = this.nodos.indexOf(nodoFin);
-            if(indiceFin>-1&&indiceFin<10)
-            {
-                indiceFin = "0"+indiceFin;
-            }
-            let indiceSelec = this.aristas[indiceFin].indexOf(nodo);
-            /*if(indiceSelec>-1&&indiceSelec<10)
-            {
-                indiceSelec = "0"+indiceSelec;
-            }*/
-            this.aristas[indiceFin].splice(indiceSelec,1);
+            let indiceSelec = this.nodos[nodoFin].indexOf(nodo);
+            this.nodos[nodoFin].splice(indiceSelec,1);
         });
-
-        this.aristas[nodo]= [];
+        this.nodos[nodo]= [];
         delete(this.nodos[nodo]);
+    }
+    buscarNodo(valor)
+    {
+         return this.nodos.hasOwnProperty(valor);
     }
 }
     let juego = new Juego();

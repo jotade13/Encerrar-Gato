@@ -33,7 +33,7 @@ body{
 }
 .casillas{
     position: relative;
-    display: inline-block;
+    display: flex;
     background-color: #0080c5;
     width: 40px;
     height: 40px;
@@ -41,8 +41,14 @@ body{
     border-style: solid;
     border-radius: 50%;
     cursor: pointer;
+    align-items: center;
 }
 .casillas:hover{
     background-color: #014366; 
 }
-
+#gato-img
+{
+    height: 35px;
+    width: 35px;
+    margin: auto;
+}
