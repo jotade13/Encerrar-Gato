@@ -1,10 +1,15 @@
 const tam_fila = 10;
 const tam_col = 10;
-const casillasAleatorias= 6;
-class Juego{
+const casillasAleatorias= 8;
+class Juego
+{
     constructor()
     {
         const juego = document.getElementById("juego");
+        var juegoHijo = document.createElement("div");
+        juegoHijo.className= "rectangulo";
+        juegoHijo.id = "juego-hijo";
+        juego.appendChild(juegoHijo);
         this._casilla = [];
         this._grafo = new Grafo();
         for(let i=0;i<tam_fila;i++)
@@ -29,8 +34,9 @@ class Juego{
                 div.addEventListener("click",this.bloquear.bind(this,div.id,i,j,true))
                 divfila.appendChild(div);
             }
-            juego.appendChild(divfila)
+            juegoHijo.appendChild(divfila)
         }
+        juego.appendChild(juegoHijo)
         this._gato = new Gato();
         this._terminado = false;
         this._ganar = false;
@@ -44,7 +50,7 @@ class Juego{
     }
     set terminado(band)
     {
-        this._terminado = band
+        this._terminado = band;
     }
     get empezado()
     {
@@ -95,7 +101,7 @@ class Juego{
         {
             this._casilla[fila][col].bloquear();
             this._grafo.eliminarNodoyAristas(fila+"-"+col);
-            document.getElementById(id).style.backgroundColor = "#014366";
+            document.getElementById(id).style.backgroundColor = "#460166";
             this._terminado = this.recorrer(1,this._gato.fila,this._gato.col);
             if(click)
             {
@@ -178,16 +184,17 @@ class Juego{
         {
             distancias[nodo] = nodo === gato ? 0 : Infinity;
         }
+         
+        while((!band||this.terminado)&&this._gato._mov)
+        {   
         
-        while(!band||this.terminado)
-        {
             for (let vecino of this._grafo.nodos[nodoActual]) 
             {
                 const distancia = distancias[nodoActual] + 1;
                 if (distancia < distancias[vecino]) 
                 {
-                  distancias[vecino] = distancia;
-                  camino[vecino] = nodoActual;
+                    distancias[vecino] = distancia;
+                    camino[vecino] = nodoActual;
                 }
             }
             delete nodosNoVisitados[nodoActual];
@@ -198,8 +205,6 @@ class Juego{
                 {
                     if((nodo[0]==0||nodo[0]==tam_fila-1||nodo[2]==0||nodo[2]==tam_col-1)&&nodoActual==nodo)
                     {
-                        console.log(nodoActual)
-                        console.log(nodo)
                         band=true;
                         finEncontrado=nodo;
                         break;
@@ -207,9 +212,10 @@ class Juego{
                 }
             }
         }
-        if(distancias[nodoActual]===Infinity)
+        if(distancias[nodoActual]===Infinity||!this._gato._mov)
         {
             escogerMovimiento(camino,gato,finEncontrado,false)
+            this._gato.mov = false;
         }else
         {
             escogerMovimiento(camino,gato,finEncontrado,true)
@@ -234,30 +240,28 @@ class Juego{
             }
         }
         function escogerMovimiento(camino, inicio, fin, band) 
-        {
-            console.log(Object.keys(camino).length);
-            if(Object.keys(camino).length>0)
+        {  
+            if(band)
             {
                 const resultado = [];
                 let nodo = fin;
-               
-                if(band)
+                while (nodo !== inicio)
                 {
-                    while (nodo !== inicio)
-                    {
-                        resultado.unshift(nodo);
-                        nodo = camino[nodo];
-                    }
-                    resultado.unshift(inicio);
+                    resultado.unshift(nodo);
+                    nodo = camino[nodo];
+                }
+                resultado.unshift(inicio);
 
-                    juego._casilla[juego._gato._fila][juego._gato.col].gato = false;
-                    juego._casilla[juego._gato._fila][juego._gato.col].estado = false;
-                    juego._gato._fila = resultado[1][0];
-                    juego._gato.col = resultado[1][2];
-                    juego._casilla[resultado[1][0]][resultado[1][2]].gato = true;
-                    juego._casilla[resultado[1][0]][resultado[1][2]].estado = true;
+                juego._casilla[juego._gato._fila][juego._gato.col].gato = false;
+                juego._casilla[juego._gato._fila][juego._gato.col].estado = false;
+                juego._gato._fila = resultado[1][0];
+                juego._gato.col = resultado[1][2];
+                juego._casilla[resultado[1][0]][resultado[1][2]].gato = true;
+                juego._casilla[resultado[1][0]][resultado[1][2]].estado = true;
 
-                }else
+            }else
+            {
+                if(juego._grafo.nodos[inicio].length>0)
                 {
                     let nro = Math.floor(Math.random()*juego._grafo.nodos[inicio].length);
                     let nroMov = juego._grafo.nodos[inicio][nro]
@@ -269,12 +273,12 @@ class Juego{
                     juego._gato.col = nroCol;
                     juego._casilla[nroFila][nroCol].gato = true;
                     juego._casilla[nroFila][nroCol].estado = true;
-                }      
-            }else
-            {
-                juego.terminado=true;
-                juego.ganar=true;
-            }
+                }else
+                {
+                    juego.terminado = true;
+                    juego.ganar = true;
+                }
+            }      
         }
     }
     fin()
@@ -288,10 +292,10 @@ class Juego{
         {
             if(this.ganar)
             {
-                console.log("ganaste");
+                this.postJuego("Ganaste");
             }else
             {
-                console.log("perdiste");
+                this.postJuego("Perdiste");
             }
         }
     }
@@ -309,6 +313,47 @@ class Juego{
             var imagen = document.getElementById("gato-img");
             gato.removeChild(imagen);        
         }
+    }
+    postJuego(texto)
+    {
+        var contenedor = document.getElementById("juego")
+        var divContenedor = crearElemento("div","div-contenedor","post-contenedor",null,null)
+        var div = crearElemento("div","cuadrado","post-juego",null,null) 
+        var h2 = crearElemento("h2","titulo","post-texto",texto,null)
+        var boton = crearElemento("button","boton","post-boton","Reiniciar",true)
+        div.appendChild(h2);
+        div.appendChild(boton)
+        divContenedor.appendChild(div)
+        contenedor.appendChild(divContenedor)
+
+        function crearElemento(etiqueta,clase,id,texto,accion)
+        {
+            var elemento = document.createElement(etiqueta)
+            elemento.className = clase
+            elemento.id = id
+            if(texto!==null)
+            {
+                elemento.textContent = texto
+            }
+            if(accion!==null)
+            {
+                elemento.addEventListener("click",juego.reiniciar.bind())
+            }
+            return elemento;
+        }
+    }
+    reiniciar()
+    {
+        juego=null;
+        var divJuego = document.getElementById("juego");
+        var divHijo = document.getElementById("juego-hijo");
+        var postJuego = document.getElementById("post-contenedor");
+        divJuego.removeChild(divHijo);
+        if(postJuego!==null)
+        {
+            divJuego.removeChild(postJuego);
+        }
+        juego = new Juego();
     }
 }
 class Casilla{
@@ -372,6 +417,7 @@ class Gato{
     {
         this._fila = 4;
         this._col = 5;
+        this._mov=true;
     }
     get fila()
     {
@@ -388,6 +434,14 @@ class Gato{
     set col(col)
     {
         this._col = col;
+    }
+    get mov()
+    {
+        return this._mov;
+    }
+    set mov(mov)
+    {
+        this._mov = mov;
     }
 }
 class Grafo // Definir una clase Grafo que tiene un arreglo de nodos y un objeto de aristas para el mapa
