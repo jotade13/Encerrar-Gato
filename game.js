@@ -1,3 +1,5 @@
+import Gato from "./gato.js"
+import Grafo from "./grafo.js"
 const tam_fila = 10;
 const tam_col = 10;
 const casillasAleatorias= 8;
@@ -410,70 +412,6 @@ class Casilla{
     set gato(band)
     {
         this._gato = band;
-    }
-}
-class Gato{
-    constructor()
-    {
-        this._fila = 4;
-        this._col = 5;
-        this._mov=true;
-    }
-    get fila()
-    {
-        return this._fila;
-    }
-    set fila(fila)
-    {
-        this._fila = fila;
-    }
-    get col()
-    {
-        return this._col;
-    }
-    set col(col)
-    {
-        this._col = col;
-    }
-    get mov()
-    {
-        return this._mov;
-    }
-    set mov(mov)
-    {
-        this._mov = mov;
-    }
-}
-class Grafo // Definir una clase Grafo que tiene un arreglo de nodos y un objeto de aristas para el mapa
-{
-    constructor()
-    {
-        this.nodos = {};
-    }
-    // Añadir un nodo al grafo
-    agregarNodo(nodo)
-    {
-        this.nodos[nodo]=[];
-    }
-
-  // Añadir una arista entre dos nodos
-    agregarArista(nodo1, nodo2)
-    {
-        this.nodos[nodo1].push(nodo2);
-    }
-    eliminarNodoyAristas(nodo)
-    {
-        this.nodos[nodo].forEach(nodoFin => 
-        {
-            let indiceSelec = this.nodos[nodoFin].indexOf(nodo);
-            this.nodos[nodoFin].splice(indiceSelec,1);
-        });
-        this.nodos[nodo]= [];
-        delete(this.nodos[nodo]);
-    }
-    buscarNodo(valor)
-    {
-         return this.nodos.hasOwnProperty(valor);
     }
 }
     let juego = new Juego();
