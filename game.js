@@ -1,8 +1,10 @@
 import Gato from "./gato.js"
 import Grafo from "./grafo.js"
+import Casilla from "./casilla.js";
 const tam_fila = 10;
 const tam_col = 10;
 const casillasAleatorias= 8;
+
 class Juego
 {
     constructor()
@@ -101,7 +103,7 @@ class Juego
     {
         if(!this._casilla[fila][col].gato&&!this._casilla[fila][col].estado)
         {
-            this._casilla[fila][col].bloquear();
+            this._casilla[fila][col].band = true;
             this._grafo.eliminarNodoyAristas(fila+"-"+col);
             document.getElementById(id).style.backgroundColor = "#460166";
             this._terminado = this.recorrer(1,this._gato.fila,this._gato.col);
@@ -358,60 +360,5 @@ class Juego
         juego = new Juego();
     }
 }
-class Casilla{
-    constructor(fila,col){
-        this._fila= fila;
-        this._col= col;
-        if(fila%2==0)
-        {
-            this._par = true;
-        }else
-        {
-            this._par = false;
-        }
-        if(fila==4&&col==5)
-        {
-            this._estado = true;
-            this._gato = true; 
-        }else
-        {
-            this._estado = false;
-            this._gato = false;
-        } 
-    }
-    get fila()
-    {
-        return this._fila
-    }
-    get col()
-    {
-        return this._col
-    }
-    get estado()
-    {
-        return this._estado
-    }
-    get gato()
-    {
-        return this._gato
-    }
-    get par()
-    {
-        return this._par
-    }
 
-    bloquear()
-    {
-        this.estado = true;
-    }
-
-    set estado(band)
-    {
-        this._estado = band;
-    }
-    set gato(band)
-    {
-        this._gato = band;
-    }
-}
     let juego = new Juego();
